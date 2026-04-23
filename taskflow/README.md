@@ -11,7 +11,7 @@ A **Kanban-style task board** app: projects, boards, columns, and draggable task
 
 ## Features
 
-- **Auth (mock):** register on first use, then sign in with the same email/password on that device. A short-lived `taskflow_auth` cookie is used for route protection; user and app data are stored in **`localStorage`**.
+- **Auth (mock):** register on first use, then sign in with the same email/password on that device. A `taskflow_auth` cookie is set on successful login (optional consistency); **access control** is enforced on the **client** by checking `localStorage` and redirecting to `/login` if there is no session. User and app data are stored in **`localStorage`**.
 - **Projects:** create and list projects (scoped to the signed-in “user”).
 - **Boards / Kanban:** columns, tasks, drag-and-drop, deadlines, and a “Done” column with sensible move rules.
 - **No server API** in this repo: there are no `app/api` routes; nothing is sent to a remote database.
@@ -47,7 +47,7 @@ npm run lint
 | `/` | Project grid (after auth) |
 | `/boards/[boardId]` | Kanban board |
 
-Unauthenticated users are redirected to `/login` via `middleware.ts` (except when the login route is used).
+Unauthenticated users are **redirected to `/login` in the browser** (see `app/page.tsx` and `app/boards/.../page.tsx`); there is no Edge `middleware` in this project (avoids serverless middleware issues on hosts like Vercel for this mock-auth setup).
 
 ## Deploy
 
@@ -56,7 +56,6 @@ Standard **Next.js** deploy (e.g. [Vercel](https://vercel.com)): connect the rep
 ## Project layout (high level)
 
 - `app/` — App Router pages (`page.tsx`, `login`, `boards`)
-- `middleware.ts` — auth cookie check for protected routes
 - `next.config.ts` — Next.js config
 
 ---
