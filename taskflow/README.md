@@ -1,36 +1,64 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# TaskFlow
 
-## Getting Started
+A **Kanban-style task board** app: projects, boards, columns, and draggable tasks. Built as a **single-user / demo** experience with **no backend**—all data lives in the browser.
 
-First, run the development server:
+## Stack
+
+- **Next.js** (App Router) · **React** · **TypeScript**
+- **Tailwind CSS** for styling
+- **@dnd-kit** for drag and drop
+- **lucide-react** for icons
+
+## Features
+
+- **Auth (mock):** register on first use, then sign in with the same email/password on that device. A short-lived `taskflow_auth` cookie is used for route protection; user and app data are stored in **`localStorage`**.
+- **Projects:** create and list projects (scoped to the signed-in “user”).
+- **Boards / Kanban:** columns, tasks, drag-and-drop, deadlines, and a “Done” column with sensible move rules.
+- **No server API** in this repo: there are no `app/api` routes; nothing is sent to a remote database.
+
+## Data & limitations
+
+- Data is **per browser / per device**. Clearing site data, another browser, or **another phone** will not see the same projects unless you add a real backend later.
+- This is **not** multi-user sync or e-mail–based board sharing. That would require server storage and identity.
+
+## Scripts
 
 ```bash
+npm install
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+App runs at [http://localhost:3000](http://localhost:3000) in development.
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+```bash
+npm run build
+npm start
+```
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+```bash
+npm run lint
+```
 
-## Learn More
+## Routes (overview)
 
-To learn more about Next.js, take a look at the following resources:
+| Path | Purpose |
+|------|---------|
+| `/login` | Register / sign in (mock) |
+| `/` | Project grid (after auth) |
+| `/boards/[boardId]` | Kanban board |
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+Unauthenticated users are redirected to `/login` via `middleware.ts` (except when the login route is used).
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+## Deploy
 
-## Deploy on Vercel
+Standard **Next.js** deploy (e.g. [Vercel](https://vercel.com)): connect the repo, use the default build (`next build`) and start (`next start`) settings. Data remains **client-only**; each visitor has their own isolated storage.
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+## Project layout (high level)
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+- `app/` — App Router pages (`page.tsx`, `login`, `boards`)
+- `middleware.ts` — auth cookie check for protected routes
+- `next.config.ts` — Next.js config
+
+---
+
+TaskFlow is a local-first prototype. For production sharing, accounts across devices, or team permissions, you would add a database and a real API.
