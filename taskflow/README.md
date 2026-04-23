@@ -51,7 +51,23 @@ Unauthenticated users are **redirected to `/login` in the browser** (see `app/pa
 
 ## Deploy
 
-Standard **Next.js** deploy (e.g. [Vercel](https://vercel.com)): connect the repo, use the default build (`next build`) and start (`next start`) settings. Data remains **client-only**; each visitor has their own isolated storage.
+Standard **Next.js** deploy (e.g. [Vercel](https://vercel.com)). Data remains **client-only**; each visitor has their own isolated storage.
+
+### Vercel (this repository layout)
+
+The Next.js app lives under **`taskflow/`**, not at the git repository root. In the Vercel project:
+
+1. **Settings → General → Root Directory** → set to **`taskflow`** (important). If this is wrong, Vercel may build the wrong tree or serve a stale layout.
+2. After changing it, open **Deployments → … → Redeploy** and **disable “Use existing Build Cache”** once so old Edge artifacts (e.g. from an old `middleware`) are dropped.
+3. Confirm the deployment’s **commit** matches `main` where `taskflow/middleware.ts` is **absent** (this app does not use Edge middleware).
+
+If you still see **`500` / `MIDDLEWARE_INVOCATION_FAILED`**, it is almost always **cache** or **wrong root directory**—there is no `middleware` in source anymore.
+
+**`404: NOT_FOUND` (Vercel):** almost always **Root Directory** is not set to **`taskflow`**, so the deploy has no real Next app. Fix: **Settings → General → Root Directory → `taskflow`**, then **Redeploy** (turn off “Use existing Build Cache” once). Open the **production URL** from the latest **Ready** deployment (e.g. your team URL like `https://taskflow-xxx.vercel.app/`, then try `/` and `/login`). Do not use a deleted or old **Preview** URL.
+
+**Which URL to open:** the **Visit** link on a deployment (e.g. `https://<name>-<id>-<team>.vercel.app`) is the correct URL for **that** deploy. A shorter `https://<project>.vercel.app` domain is only correct if it appears under **Settings → Domains** for *this* project; otherwise it may be another app or unassigned. After each new deploy, use **Visit** again or the domain listed in **Domains**.
+
+**404 on a just-built deployment:** in **Project → Settings → General**, ensure **Output Directory** is **empty** (default for Next.js), **Framework Preset** is **Next.js**, and **Root Directory** is `taskflow` (if the repo is a monorepo). Redeploy after changing config.
 
 ## Project layout (high level)
 
