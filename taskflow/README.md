@@ -2,6 +2,16 @@
 
 A **Kanban-style task board** app: projects, boards, columns, and draggable tasks. Built as a **single-user / demo** experience with **no backend**—all data lives in the browser.
 
+## Quick Vercel Setup (Important)
+
+Yes, others can run this on Vercel, but they must use the correct project root:
+
+- **Root Directory must be `taskflow`** (not repository root)
+- **Framework Preset:** Next.js
+- **Output Directory:** leave empty (default)
+
+If Root Directory is wrong, deployment may show `404: NOT_FOUND` even when build logs look successful.
+
 ## Stack
 
 - **Next.js** (App Router) · **React** · **TypeScript**
@@ -73,6 +83,8 @@ If you still see **`500` / `MIDDLEWARE_INVOCATION_FAILED`**, it is almost always
 
 - `app/` — App Router pages (`page.tsx`, `login`, `boards`)
 - `next.config.ts` — Next.js config
+- `vercel.json` — Vercel framework hint (Next.js)
+- `package.json` — scripts and dependencies
 
 ---
 
