@@ -12,6 +12,19 @@ type MockUser = {
 
 const USERS_KEY = "taskflow-users-v1";
 const CURRENT_USER_KEY = "taskflow-current-user-v1";
+const AUTH_COOKIE = "taskflow_auth=1; path=/; max-age=604800; SameSite=Lax";
+const INPUT_BASE_CLASS =
+  "w-full rounded-lg border border-zinc-300 bg-white px-3 py-2.5 text-base text-zinc-900 outline-none ring-blue-500/30 transition focus:ring-2 sm:text-sm dark:border-zinc-700 dark:bg-zinc-950 dark:text-zinc-100";
+
+const isMockUser = (value: unknown): value is MockUser => {
+  if (!value || typeof value !== "object") return false;
+  const candidate = value as Record<string, unknown>;
+  return (
+    typeof candidate.fullName === "string" &&
+    typeof candidate.email === "string" &&
+    typeof candidate.password === "string"
+  );
+};
 
 export default function LoginPage() {
   const router = useRouter();
@@ -26,6 +39,7 @@ export default function LoginPage() {
   const [registerError, setRegisterError] = useState("");
   /** Portals / overlay yerine ayni kartta; mobilde gosterme sorunlarini onler */
   const [showRegister, setShowRegister] = useState(false);
+  const normalizeEmail = (value: string) => value.trim().toLowerCase();
 
   useEffect(() => {
     // Cerez okunmasi sadece istemcide; ilk paint sonrasi banner icin
@@ -40,7 +54,10 @@ export default function LoginPage() {
       if (!raw) return [];
       const parsed = JSON.parse(raw) as unknown;
       if (!Array.isArray(parsed)) return [];
-      return parsed as MockUser[];
+      return parsed.filter(isMockUser).map((user) => ({
+        ...user,
+        email: normalizeEmail(user.email),
+      }));
     } catch {
       return [];
     }
@@ -53,7 +70,7 @@ export default function LoginPage() {
     }
     setError("");
     const users = getUsers();
-    const emailTrim = email.trim();
+    const emailTrim = normalizeEmail(email);
     const byEmail = users.find((user) => user.email === emailTrim);
 
     if (!byEmail) {
@@ -74,7 +91,7 @@ export default function LoginPage() {
       return;
     }
     setError("");
-    document.cookie = "taskflow_auth=1; path=/; max-age=604800; SameSite=Lax";
+    document.cookie = AUTH_COOKIE;
     router.replace("/");
   };
 
@@ -95,7 +112,8 @@ export default function LoginPage() {
       return;
     }
     const users = getUsers();
-    if (users.some((user) => user.email === registerEmail.trim())) {
+    const normalizedRegisterEmail = normalizeEmail(registerEmail);
+    if (users.some((user) => user.email === normalizedRegisterEmail)) {
       setRegisterError("Bu email ile zaten hesap var.");
       return;
     }
@@ -103,7 +121,7 @@ export default function LoginPage() {
       ...users,
       {
         fullName: registerName.trim(),
-        email: registerEmail.trim(),
+        email: normalizedRegisterEmail,
         password: registerPassword,
       },
     ];
@@ -113,7 +131,7 @@ export default function LoginPage() {
       setRegisterError("Bu tarayicida depolama kapali. Normal sekmede deneyin.");
       return;
     }
-    setEmail(registerEmail.trim());
+    setEmail(normalizedRegisterEmail);
     setPassword(registerPassword);
     setRegisterName("");
     setRegisterEmail("");
@@ -155,7 +173,7 @@ export default function LoginPage() {
                 value={email}
                 onChange={(event) => setEmail(event.target.value)}
                 onKeyDown={goLoginOnEnter}
-                className="w-full rounded-lg border border-zinc-300 bg-white px-3 py-2.5 text-base text-zinc-900 outline-none ring-blue-500/30 transition focus:ring-2 sm:text-sm dark:border-zinc-700 dark:bg-zinc-950 dark:text-zinc-100"
+                className={INPUT_BASE_CLASS}
                 placeholder="you@example.com"
               />
             </div>
@@ -171,7 +189,7 @@ export default function LoginPage() {
                 value={password}
                 onChange={(event) => setPassword(event.target.value)}
                 onKeyDown={goLoginOnEnter}
-                className="w-full rounded-lg border border-zinc-300 bg-white px-3 py-2.5 text-base text-zinc-900 outline-none ring-blue-500/30 transition focus:ring-2 sm:text-sm dark:border-zinc-700 dark:bg-zinc-950 dark:text-zinc-100"
+                className={INPUT_BASE_CLASS}
                 placeholder="******"
               />
             </div>
@@ -207,7 +225,7 @@ export default function LoginPage() {
               onChange={(event) => setRegisterName(event.target.value)}
               placeholder="Ad Soyad"
               autoComplete="name"
-              className="w-full rounded-lg border border-zinc-300 bg-white px-3 py-2.5 text-base text-zinc-900 outline-none ring-blue-500/30 focus:ring-2 sm:text-sm dark:border-zinc-700 dark:bg-zinc-950 dark:text-zinc-100"
+              className={INPUT_BASE_CLASS}
             />
             <input
               type="email"
@@ -215,7 +233,7 @@ export default function LoginPage() {
               onChange={(event) => setRegisterEmail(event.target.value)}
               placeholder="Email"
               autoComplete="email"
-              className="w-full rounded-lg border border-zinc-300 bg-white px-3 py-2.5 text-base text-zinc-900 outline-none ring-blue-500/30 focus:ring-2 sm:text-sm dark:border-zinc-700 dark:bg-zinc-950 dark:text-zinc-100"
+              className={INPUT_BASE_CLASS}
             />
             <input
               type="password"
@@ -223,7 +241,7 @@ export default function LoginPage() {
               onChange={(event) => setRegisterPassword(event.target.value)}
               placeholder="Sifre"
               autoComplete="new-password"
-              className="w-full rounded-lg border border-zinc-300 bg-white px-3 py-2.5 text-base text-zinc-900 outline-none ring-blue-500/30 focus:ring-2 sm:text-sm dark:border-zinc-700 dark:bg-zinc-950 dark:text-zinc-100"
+              className={INPUT_BASE_CLASS}
             />
             <input
               type="password"
@@ -231,7 +249,7 @@ export default function LoginPage() {
               onChange={(event) => setRegisterConfirm(event.target.value)}
               placeholder="Sifre tekrar"
               autoComplete="new-password"
-              className="w-full rounded-lg border border-zinc-300 bg-white px-3 py-2.5 text-base text-zinc-900 outline-none ring-blue-500/30 focus:ring-2 sm:text-sm dark:border-zinc-700 dark:bg-zinc-950 dark:text-zinc-100"
+              className={INPUT_BASE_CLASS}
             />
             {registerError ? <p className="text-sm font-medium text-red-600" role="alert">{registerError}</p> : null}
             <div className="flex flex-col gap-2 sm:flex-row sm:justify-end">
@@ -255,6 +273,17 @@ export default function LoginPage() {
             </div>
           </div>
         ) : null}
+        <p className="mt-6 text-center text-xs text-zinc-500 dark:text-zinc-400">
+          Source code:{" "}
+          <a
+            href="https://github.com/sanberkkk/Taskflow-kanban.git"
+            target="_blank"
+            rel="noreferrer"
+            className="font-medium underline underline-offset-2"
+          >
+            GitHub Repository
+          </a>
+        </p>
       </div>
 
     </main>
